@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "ap-south-1"
+  region     = "ap-south-1"
   access_key = "AKIAXYKJSPFI4WS24VFD"
   secret_key = "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"
 }
@@ -38,7 +38,7 @@ resource "aws_ecs_cluster" "main" {
 resource "aws_ecs_service" "hello_world" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = "hello-world-task"
+  task_definition = "hello-world-task:1"
   desired_count   = 1
   launch_type     = "FARGATE"
 
