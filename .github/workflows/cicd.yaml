@@ -37,7 +37,7 @@ jobs:
         run: echo "${{ secrets.vishweshrushi }}" | docker login -u vishweshrushi --password-stdin
 
       - name: Push Docker image to Docker Hub
-        run: docker push your_dockerhub_username/hello-world:latest
+        run: docker push vishweshrushi/hello-world:latest
 
       - name: Deploy to ECS
         run: |
