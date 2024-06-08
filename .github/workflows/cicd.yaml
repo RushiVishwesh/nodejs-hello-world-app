@@ -42,4 +42,4 @@ jobs:
       - name: Deploy to ECS
         run: |
           echo "Deploying to ECS..."
-          aws ecs update-service --cluster hello-world-cluster --service hello-world-service --force-new-deployment
+          aws ecs update-service --debug --cluster hello-world-cluster --service hello-world-service --force-new-deployment 
