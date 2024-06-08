@@ -6,6 +6,9 @@ provider "aws" {
 
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "hello-world-vpc"
+  }
 }
 
 resource "aws_subnet" "hello_world_subnet" {
@@ -35,10 +38,32 @@ resource "aws_ecs_cluster" "main" {
   name = "hello-world-cluster"
 }
 
-resource "aws_ecs_service" "hello_world" {
+resource "aws_ecs_task_definition" "hello_world" {
+  family                   = "hello-world-task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+
+  container_definitions = jsonencode([
+    {
+      name           = "hello-world-container"
+      image          = "vishweshrushi/hello-world:latest"
+      essential      = true
+      memory         = 512
+      cpu            = 256
+      portMappings   = [
+        {
+          containerPort = 8080
+          hostPort      = 8080
+        }
+      ]
+    }
+  ])
+}
+
+resource "aws_ecs_service" "hello_world_svc" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = "hello-world-task"
+  task_definition = aws_ecs_task_definition.hello_world.arn  # Use ARN here
   desired_count   = 1
   launch_type     = "FARGATE"
 
