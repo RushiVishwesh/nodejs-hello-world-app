@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-south-1"
+  region = "as-south-1"
   access_key = "AKIAXYKJSPFI4WS24VFD"
   secret_key = "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"
 }
@@ -8,12 +8,12 @@ resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
 
-resource "aws_subnet" "subnet" {
+resource "aws_subnet" "hello_world_subnet" {
   vpc_id     = aws_vpc.main.id
   cidr_block = "10.0.1.0/24"
 }
 
-resource "aws_security_group" "ecs_sg" {
+resource "aws_security_group" "hello_world_sg" {
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -43,7 +43,7 @@ resource "aws_ecs_service" "hello_world" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [aws_subnet.subnet.id]
-    security_groups = [aws_security_group.ecs_sg.id]
+    subnets         = [aws_subnet.hello_world_subnet.id]
+    security_groups = [aws_security_group.hello_world_sg.id]
   }
 }
