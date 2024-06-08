@@ -40,22 +40,17 @@ resource "aws_ecs_cluster" "main" {
 
 resource "aws_ecs_task_definition" "hello_world" {
   family                   = "hello-world-task"
-  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-
+  network_mode             = "awsvpc"
+  cpu            = 256
+  memory         = 512
   container_definitions = jsonencode([
     {
       name           = "hello-world-container"
       image          = "vishweshrushi/hello-world:latest"
-      essential      = true
-      memory         = 512
       cpu            = 256
-      portMappings   = [
-        {
-          containerPort = 8080
-          hostPort      = 8080
-        }
-      ]
+      memory         = 512
+      essential      = true
     }
   ])
 }
