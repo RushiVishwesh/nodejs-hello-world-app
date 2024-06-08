@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
@@ -20,8 +20,8 @@ jobs:
         run: terraform init
 
       - name: Deploy Infrastructure
-        run: terraform apply -y
-
+        run: terraform apply -auto-approve
+        
       - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
