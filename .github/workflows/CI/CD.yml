@@ -18,25 +18,23 @@ jobs:
 
       - name: Initialize Terraform
         run: terraform init
-        working-directory: ./terraform  # Ensure this path is correct
 
       - name: Deploy Infrastructure
         run: terraform apply -auto-approve
-        working-directory: ./terraform  # Ensure this path is correct
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '12'
 
       - name: Install Dependencies
         run: npm install
 
       - name: Build Docker image
-        run: docker build -t your_dockerhub_username/hello-world:latest .
+        run: docker build -t vishweshrushi/hello-world:latest .
 
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.vishweshrushi }}" | docker login -u vishweshrushi --password-stdin
 
       - name: Push Docker image to Docker Hub
         run: docker push your_dockerhub_username/hello-world:latest
