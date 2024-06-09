@@ -20,29 +20,5 @@ jobs:
         run: terraform init
 
       - name: Deploy Infrastructure
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve
         
-      - name: Set up Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: '12'
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build Docker image
-        run: docker build -t vishweshrushi/hello-world:latest .
-
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.vishweshrushi }}" | docker login -u vishweshrushi --password-stdin
-
-      - name: Push Docker image to Docker Hub
-        run: docker push vishweshrushi/hello-world:latest
-
-      - name: Deploy to ECS
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.aws_key }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_pass }}
-        run: |
-          echo "Deploying to ECS..."
-          aws ecs update-service --debug --region ap-south-1 --cluster hello-world-cluster --service hello-world-service --force-new-deployment 
