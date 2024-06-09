@@ -4,43 +4,17 @@ provider "aws" {
   secret_key = "khlRXfoDiBwQG1U7jug8yE2YoaHrAx09DSsv/PIZ"
 }
 
-resource "random_id" "policy_id" {
-  byte_length = 4
-}
-
-resource "aws_iam_policy" "ecs_full_access_policy" {
-  name        = "ecs-full-access-policy-${random_id.policy_id.hex}"
-  description = "Full access policy for ECS"
-
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect"   : "Allow",
-        "Action"   : [
-          "ecs:*",
-          "ec2:*",
-          "elasticloadbalancing:*",
-          "cloudwatch:*",
-          "logs:*"
-        ],
-        "Resource" : "*"
-      }
-    ]
-  })
-}
-
 resource "aws_iam_role" "ecs_full_access_role" {
   name               = "ecs-full-access-role"
   assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
+    "Version": "2012-10-17",
+    "Statement": [
       {
-        "Effect"    : "Allow",
-        "Principal" : {
-          "Service" : "ecs.amazonaws.com"
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "ecs.amazonaws.com"
         },
-        "Action"    : "sts:AssumeRole"
+        "Action": "sts:AssumeRole"
       }
     ]
   })
@@ -48,7 +22,7 @@ resource "aws_iam_role" "ecs_full_access_role" {
 
 resource "aws_iam_role_policy_attachment" "ecs_full_access_attachment" {
   role       = aws_iam_role.ecs_full_access_role.name
-  policy_arn = aws_iam_policy.ecs_full_access_policy.arn
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
 }
 
 resource "aws_vpc" "main" {
@@ -91,6 +65,7 @@ resource "aws_ecs_task_definition" "hello_world" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
+  execution_role_arn       = aws_iam_role.task_execution_role.arn
   container_definitions = jsonencode([
     {
       name         = "hello-world-container"
@@ -113,10 +88,11 @@ resource "aws_ecs_service" "hello_world" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.hello_world.arn
   desired_count   = 1
-  launch_type     = "FARGATE" 
+  launch_type     = "FARGATE"
   
   network_configuration {
     subnets         = [aws_subnet.hello_world_subnet.id]
     security_groups = [aws_security_group.hello_world_sg.id]
+    assign_public_ip = true
   }
 }
