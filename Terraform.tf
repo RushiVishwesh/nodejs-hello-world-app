@@ -75,7 +75,7 @@ resource "aws_ecs_service" "hello_world" {
 }
 
 data "aws_iam_role" "ecs_service_role" {
-  name = "ecs-service-role"  # This is the assumed name of the ECS service role
+  name = "AWSServiceRoleForECS"  # This is the assumed name of the ECS service role
 }
 
 resource "aws_iam_policy_attachment" "ecs_full_access" {
