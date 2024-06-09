@@ -4,45 +4,17 @@ provider "aws" {
   secret_key = "khlRXfoDiBwQG1U7jug8yE2YoaHrAx09DSsv/PIZ"
 }
 
-# Create a new IAM user
-resource "aws_iam_user" "ecs_user" {
-  name = "ecs-user"
-}
-
-# Create an IAM policy for full ECS access
-resource "aws_iam_policy" "ecs_full_access_policy" {
-  name        = "ecs-full-access-policy"
-  description = "Policy to provide full access to ECS services"
-  policy      = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect"   : "Allow",
-        "Action"   : "ecs:*",
-        "Resource" : "*"
-      }
-    ]
-  })
-}
-
-# Attach the policy to the new IAM user
-resource "aws_iam_user_policy_attachment" "ecs_user_policy_attachment" {
-  user       = aws_iam_user.ecs_user.name
-  policy_arn = aws_iam_policy.ecs_full_access_policy.arn
-}
-
-# Existing ECS full access role for ECS service
 resource "aws_iam_role" "ecs_full_access_role" {
   name               = "ecs-full-access-role"
   assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
+    "Version"               : "2012-10-17",
     "Statement" : [
       {
-        "Effect" : "Allow",
+        "Effect"    : "Allow",
         "Principal" : {
           "Service" : "ecs.amazonaws.com"
         },
-        "Action" : "sts:AssumeRole"
+        "Action"    : "sts:AssumeRole"
       }
     ]
   })
@@ -87,43 +59,21 @@ resource "aws_ecs_cluster" "main" {
   name = "hello-world-cluster"
 }
 
-# IAM role for ECS task execution
-resource "aws_iam_role" "task_execution_role" {
-  name               = "ecs-task-execution-role"
-  assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "ecs-tasks.amazonaws.com"
-        },
-        "Action" : "sts:AssumeRole"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "task_execution_role" {
-  role       = aws_iam_role.task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
-}
 
 resource "aws_ecs_task_definition" "hello_world" {
   family                   = "hello-world-task"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = 256
-  memory                   = 512
-  execution_role_arn       = aws_iam_role.task_execution_role.arn
+  cpu            = 256
+  memory         = 512
   container_definitions = jsonencode([
     {
-      name         = "hello-world-container"
-      image        = "vishweshrushi/hello-world:latest"
-      cpu          = 256
-      memory       = 512
-      essential    = true
-      portMappings = [
+      name           = "hello-world-container"
+      image          = "vishweshrushi/hello-world:latest"
+      cpu            = 256
+      memory         = 512
+      essential      = true
+      portMappings   = [
         {
           containerPort = 8080
           hostPort      = 8080
@@ -136,9 +86,9 @@ resource "aws_ecs_task_definition" "hello_world" {
 resource "aws_ecs_service" "hello_world" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.hello_world.arn
+  task_definition = aws_ecs_task_definition.hello_world.arn  # Use ARN here
   desired_count   = 1
-  launch_type     = "FARGATE"
+  launch_type     = "FARGATE" 
   
   network_configuration {
     subnets         = [aws_subnet.hello_world_subnet.id]
