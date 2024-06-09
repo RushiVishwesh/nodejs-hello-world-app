@@ -73,3 +73,9 @@ resource "aws_ecs_service" "hello_world" {
     security_groups = [aws_security_group.hello_world_sg.id]
   }
 }
+
+resource "aws_iam_policy_attachment" "ecs_full_access" {
+  name       = "ecs-full-access"
+  roles      = [AWSServiceRoleForECS]  
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+}
