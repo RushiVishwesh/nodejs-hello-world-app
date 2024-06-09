@@ -40,6 +40,9 @@ jobs:
         run: docker push vishweshrushi/hello-world:latest
 
       - name: Deploy to ECS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_key }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_pass }}
         run: |
           echo "Deploying to ECS..."
           aws ecs update-service --debug --region ap-south-1 --cluster hello-world-cluster --service hello-world-service --force-new-deployment 
