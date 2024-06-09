@@ -4,7 +4,6 @@ provider "aws" {
   secret_key = "khlRXfoDiBwQG1U7jug8yE2YoaHrAx09DSsv/PIZ"
 }
 
-# Global IAM Role with ECS Full Access
 resource "aws_iam_role" "ecs_global_role" {
   name               = "ecs-global-role"
   assume_role_policy = jsonencode({
@@ -28,7 +27,7 @@ resource "aws_iam_role" "ecs_global_role" {
   })
 }
 
-# Attach the AmazonECS_FullAccess managed policy to the role
+
 resource "aws_iam_role_policy_attachment" "ecs_full_access_attachment" {
   role       = aws_iam_role.ecs_global_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
