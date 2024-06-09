@@ -39,19 +39,10 @@ jobs:
       - name: Push Docker image to Docker Hub
         run: docker push vishweshrushi/hello-world:latest
 
-      - name: Get AWS Account ID
-        id: aws_account_id
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.aws_key  }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_pass }}
-        run: |
-          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-          echo "::set-output name=aws_account_id::$AWS_ACCOUNT_ID"
-
       - name: Deploy to ECS
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_key  }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_pass }}
         run: |
           echo "Deploying to ECS..."
-          aws ecs update-service --region ap-south-1 --cluster hello-world-cluster --service hello-world-service --force-new-deployment
+          aws ecs update-service --region ap-south-1 --cluster hello-world-cluster --service hello-world-service --force-new-deployment --role arn:aws:iam::533267118417:role/ecs_full_access_role
