@@ -45,4 +45,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_pass }}
         run: |
           echo "Deploying to ECS..."
-          aws ecs update-service --region ap-south-1 --cluster hello-world-cluster --service hello-world-service --force-new-deployment --role-arn arn:aws:iam::533267118417:role/ecs_full_access_role
+          aws ecs update-service --region ap-south-1 --cluster hello-world-cluster --service hello-world-service --force-new-deployment
