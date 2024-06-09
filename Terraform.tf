@@ -65,6 +65,7 @@ resource "aws_ecs_task_definition" "hello_world" {
   network_mode             = "awsvpc"
   cpu            = 256
   memory         = 512
+  task_execution_role = aws_iam_role.ecs_full_access_role.arn
   container_definitions = jsonencode([
     {
       name           = "hello-world-container"
@@ -88,7 +89,7 @@ resource "aws_ecs_service" "hello_world" {
   task_definition = aws_ecs_task_definition.hello_world.arn  # Use ARN here
   desired_count   = 1
   launch_type     = "FARGATE" 
-  task_role_arn = aws_iam_role.ecs_full_access_role.arn
+  task_execution_role = aws_iam_role.ecs_full_access_role.arn
   network_configuration {
     subnets         = [aws_subnet.hello_world_subnet.id]
     security_groups = [aws_security_group.hello_world_sg.id]
