@@ -31,29 +31,6 @@ resource "aws_iam_user_policy_attachment" "ecs_user_policy_attachment" {
   policy_arn = aws_iam_policy.ecs_full_access_policy.arn
 }
 
-# Create a new IAM role for the user with full ECS access
-resource "aws_iam_role" "ecs_user_role" {
-  name               = "ecs-user-role"
-  assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Principal" : {
-          "AWS" : aws_iam_user.ecs_user.arn
-        },
-        "Action" : "sts:AssumeRole"
-      }
-    ]
-  })
-}
-
-# Attach the ECS full access policy to the new role
-resource "aws_iam_role_policy_attachment" "ecs_user_role_policy_attachment" {
-  role       = aws_iam_role.ecs_user_role.name
-  policy_arn = aws_iam_policy.ecs_full_access_policy.arn
-}
-
 # Existing ECS full access role for ECS service
 resource "aws_iam_role" "ecs_full_access_role" {
   name               = "ecs-full-access-role"
@@ -110,6 +87,7 @@ resource "aws_ecs_cluster" "main" {
   name = "hello-world-cluster"
 }
 
+# IAM role for ECS task execution
 resource "aws_iam_role" "task_execution_role" {
   name               = "ecs-task-execution-role"
   assume_role_policy = jsonencode({
