@@ -67,6 +67,7 @@ resource "aws_ecs_service" "hello_world" {
   task_definition = aws_ecs_task_definition.hello_world.arn  # Use ARN here
   desired_count   = 1
   launch_type     = "FARGATE"
+  
   network_configuration {
     subnets         = [aws_subnet.hello_world_subnet.id]
     security_groups = [aws_security_group.hello_world_sg.id]
