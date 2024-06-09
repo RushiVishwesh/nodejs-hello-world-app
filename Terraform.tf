@@ -4,10 +4,32 @@ provider "aws" {
   secret_key = "khlRXfoDiBwQG1U7jug8yE2YoaHrAx09DSsv/PIZ"
 }
 
+resource "aws_iam_policy" "ecs_full_access_policy" {
+  name        = "ecs-full-access-policy-new"
+  description = "Full access policy for ECS"
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect"   : "Allow",
+        "Action"   : [
+          "ecs:*",
+          "ec2:*",
+          "elasticloadbalancing:*",
+          "cloudwatch:*",
+          "logs:*"
+        ],
+        "Resource" : "*"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role" "ecs_full_access_role" {
   name               = "ecs-full-access-role"
   assume_role_policy = jsonencode({
-    "Version"               : "2012-10-17",
+    "Version" : "2012-10-17",
     "Statement" : [
       {
         "Effect"    : "Allow",
@@ -22,7 +44,7 @@ resource "aws_iam_role" "ecs_full_access_role" {
 
 resource "aws_iam_role_policy_attachment" "ecs_full_access_attachment" {
   role       = aws_iam_role.ecs_full_access_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+  policy_arn = aws_iam_policy.ecs_full_access_policy.arn
 }
 
 resource "aws_vpc" "main" {
@@ -59,21 +81,20 @@ resource "aws_ecs_cluster" "main" {
   name = "hello-world-cluster"
 }
 
-
 resource "aws_ecs_task_definition" "hello_world" {
   family                   = "hello-world-task"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu            = 256
-  memory         = 512
+  cpu                      = 256
+  memory                   = 512
   container_definitions = jsonencode([
     {
-      name           = "hello-world-container"
-      image          = "vishweshrushi/hello-world:latest"
-      cpu            = 256
-      memory         = 512
-      essential      = true
-      portMappings   = [
+      name         = "hello-world-container"
+      image        = "vishweshrushi/hello-world:latest"
+      cpu          = 256
+      memory       = 512
+      essential    = true
+      portMappings = [
         {
           containerPort = 8080
           hostPort      = 8080
@@ -86,7 +107,7 @@ resource "aws_ecs_task_definition" "hello_world" {
 resource "aws_ecs_service" "hello_world" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.hello_world.arn  # Use ARN here
+  task_definition = aws_ecs_task_definition.hello_world.arn
   desired_count   = 1
   launch_type     = "FARGATE" 
   
