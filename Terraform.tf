@@ -4,8 +4,12 @@ provider "aws" {
   secret_key = "khlRXfoDiBwQG1U7jug8yE2YoaHrAx09DSsv/PIZ"
 }
 
+resource "random_id" "policy_id" {
+  byte_length = 4
+}
+
 resource "aws_iam_policy" "ecs_full_access_policy" {
-  name        = "ecs-full-access-policy-new"
+  name        = "ecs-full-access-policy-${random_id.policy_id.hex}"
   description = "Full access policy for ECS"
 
   policy = jsonencode({
