@@ -20,7 +20,6 @@ resource "aws_iam_role" "ecs_full_access_role" {
   })
 }
 
-# Attach AmazonECS_FullAccess policy to the IAM role
 resource "aws_iam_role_policy_attachment" "ecs_full_access_attachment" {
   role       = aws_iam_role.ecs_full_access_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
