@@ -4,6 +4,28 @@ provider "aws" {
   secret_key = "khlRXfoDiBwQG1U7jug8yE2YoaHrAx09DSsv/PIZ"
 }
 
+resource "aws_iam_role" "ecs_full_access_role" {
+  name               = "ecs-full-access-role"
+  assume_role_policy = jsonencode({
+    "Version"               : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect"    : "Allow",
+        "Principal" : {
+          "Service" : "ecs.amazonaws.com"
+        },
+        "Action"    : "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Attach AmazonECS_FullAccess policy to the IAM role
+resource "aws_iam_role_policy_attachment" "ecs_full_access_attachment" {
+  role       = aws_iam_role.ecs_full_access_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+}
+
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
   tags = {
