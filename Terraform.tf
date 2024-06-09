@@ -95,13 +95,3 @@ resource "aws_ecs_service" "hello_world" {
     security_groups = [aws_security_group.hello_world_sg.id]
   }
 }
-
-data "aws_iam_role" "ecs_service_role" {
-  name = "AWSServiceRoleForECS"  # This is the assumed name of the ECS service role
-}
-
-resource "aws_iam_policy_attachment" "ecs_full_access" {
-  name       = "ecs-full-access"
-  roles      = [data.aws_iam_role.ecs_service_role.name]
-  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
-}
