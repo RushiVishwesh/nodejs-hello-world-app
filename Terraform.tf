@@ -65,7 +65,8 @@ resource "aws_ecs_task_definition" "hello_world" {
   network_mode             = "awsvpc"
   cpu            = 256
   memory         = 512
-  execution_role_arn      = aws_iam_role.ecs_full_access_role.arn
+  task_role_arn = aws_iam_role.ecs_full_access_role.arn
+  execution_role_arn = aws_iam_role.ecs_full_access_role.arn
   container_definitions = jsonencode([
     {
       name           = "hello-world-container"
@@ -86,7 +87,7 @@ resource "aws_ecs_task_definition" "hello_world" {
 resource "aws_ecs_service" "hello_world" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.hello_world.arn  # Use ARN here
+  task_definition = aws_ecs_task_definition.hello_world  # Use ARN here
   desired_count   = 1
   launch_type     = "FARGATE" 
   network_configuration {
