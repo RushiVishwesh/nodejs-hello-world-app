@@ -4,16 +4,91 @@ provider "aws" {
   secret_key = "khlRXfoDiBwQG1U7jug8yE2YoaHrAx09DSsv/PIZ"
 }
 
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+# Create a new IAM user
+resource "aws_iam_user" "ecs_user" {
+  name = "ecs-user"
 }
 
-resource "aws_subnet" "subnet" {
+# Create an IAM policy for full ECS access
+resource "aws_iam_policy" "ecs_full_access_policy" {
+  name        = "ecs-full-access-policy"
+  description = "Policy to provide full access to ECS services"
+  policy      = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect"   : "Allow",
+        "Action"   : "ecs:*",
+        "Resource" : "*"
+      }
+    ]
+  })
+}
+
+# Attach the policy to the new IAM user
+resource "aws_iam_user_policy_attachment" "ecs_user_policy_attachment" {
+  user       = aws_iam_user.ecs_user.name
+  policy_arn = aws_iam_policy.ecs_full_access_policy.arn
+}
+
+# Create a new IAM role for the user with full ECS access
+resource "aws_iam_role" "ecs_user_role" {
+  name               = "ecs-user-role"
+  assume_role_policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : aws_iam_user.ecs_user.arn
+        },
+        "Action" : "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Attach the ECS full access policy to the new role
+resource "aws_iam_role_policy_attachment" "ecs_user_role_policy_attachment" {
+  role       = aws_iam_role.ecs_user_role.name
+  policy_arn = aws_iam_policy.ecs_full_access_policy.arn
+}
+
+# Existing ECS full access role for ECS service
+resource "aws_iam_role" "ecs_full_access_role" {
+  name               = "ecs-full-access-role"
+  assume_role_policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "ecs.amazonaws.com"
+        },
+        "Action" : "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_full_access_attachment" {
+  role       = aws_iam_role.ecs_full_access_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+}
+
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "hello-world-vpc"
+  }
+}
+
+resource "aws_subnet" "hello_world_subnet" {
   vpc_id     = aws_vpc.main.id
   cidr_block = "10.0.1.0/24"
 }
 
-resource "aws_security_group" "ecs_sg" {
+resource "aws_security_group" "hello_world_sg" {
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -35,46 +110,48 @@ resource "aws_ecs_cluster" "main" {
   name = "hello-world-cluster"
 }
 
-resource "aws_iam_role" "ecs_task_execution" {
-  name               = "ecsTaskExecutionRole"
+resource "aws_iam_role" "task_execution_role" {
+  name               = "ecs-task-execution-role"
   assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
+    "Version" : "2012-10-17",
+    "Statement" : [
       {
-        Effect    = "Allow",
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "ecs-tasks.amazonaws.com"
         },
-        Action    = "sts:AssumeRole"
-      },
-    ],
+        "Action" : "sts:AssumeRole"
+      }
+    ]
   })
+}
 
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
-  ]
+resource "aws_iam_role_policy_attachment" "task_execution_role" {
+  role       = aws_iam_role.task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
 }
 
 resource "aws_ecs_task_definition" "hello_world" {
   family                   = "hello-world-task"
-  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
-  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-
+  network_mode             = "awsvpc"
+  cpu                      = 256
+  memory                   = 512
+  execution_role_arn       = aws_iam_role.task_execution_role.arn
   container_definitions = jsonencode([
     {
-      name      = "hello-world-container"
-      image     = "your_dockerhub_username/hello-world:latest"
-      essential = true
+      name         = "hello-world-container"
+      image        = "vishweshrushi/hello-world:latest"
+      cpu          = 256
+      memory       = 512
+      essential    = true
       portMappings = [
         {
           containerPort = 8080
           hostPort      = 8080
-        },
+        }
       ]
-    },
+    }
   ])
 }
 
@@ -84,9 +161,9 @@ resource "aws_ecs_service" "hello_world" {
   task_definition = aws_ecs_task_definition.hello_world.arn
   desired_count   = 1
   launch_type     = "FARGATE"
-
+  
   network_configuration {
-    subnets         = [aws_subnet.subnet.id]
-    security_groups = [aws_security_group.ecs_sg.id]
+    subnets         = [aws_subnet.hello_world_subnet.id]
+    security_groups = [aws_security_group.hello_world_sg.id]
   }
 }
