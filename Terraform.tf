@@ -83,7 +83,6 @@ resource "aws_ecs_task_definition" "hello_world" {
   cpu            = 256
   memory         = 512
   execution_role_arn      = aws_iam_role.ecs_full_access_role.arn
-  task_role_arn           = aws_iam_role.task_execution_role.arn
   container_definitions = jsonencode([
     {
       name           = "hello-world-container"
@@ -99,6 +98,7 @@ resource "aws_ecs_task_definition" "hello_world" {
       ]
     }
   ])
+  task_execution_role_arn = aws_iam_role.task_execution_role.arn
 }
 
 resource "aws_ecs_service" "hello_world" {
