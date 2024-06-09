@@ -59,6 +59,23 @@ resource "aws_ecs_cluster" "main" {
   name = "hello-world-cluster"
 }
 
+
+resource "aws_iam_role" "task_execution_role" {
+  name               = "ecs-task-execution-role"
+  assume_role_policy = jsonencode({
+    "Version"               : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect"    : "Allow",
+        "Principal" : {
+          "Service" : "ecs-tasks.amazonaws.com"
+        },
+        "Action"    : "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
 resource "aws_ecs_task_definition" "hello_world" {
   family                   = "hello-world-task"
   requires_compatibilities = ["FARGATE"]
